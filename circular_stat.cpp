@@ -222,17 +222,6 @@ void single_trial_ppc_all_features(
                     for (auto& tr : threads) tr.join();
                     thread_idx = 0;
                 }
-
-//                single_trial_ppc_with_classes(recalls, n_events, wavelets_bp1, n_events*t_size, wavelets_bp2, n_events*t_size, ppcs, n_events*t_size);
-//                double* ppc_output_f_bp1_bp2 = ppc_output + (feature_idx*n_events);
-//                for (size_t e=0; e<n_events; ++e) {
-//                    double s{0.0};
-//                    double* ppcs_e = ppcs + (e*t_size);
-//                    for (size_t t=0; t<t_size; ++t) {
-//                        s += ppcs_e[t];
-//                    }
-//                    ppc_output_f_bp1_bp2[e] = s / t_size;
-//                }
             }
         }
     }
