@@ -1,3 +1,3 @@
 export SWIG_LIB=/home1/busygin/swig-3.0.7/Lib; ~/swig-3.0.7/swig -c++ -python circular_stat.i
-g++ -fpic -std=c++11 -O3 -c -Wall -I/usr/global/anaconda/include/python2.7 -I/usr/global/anaconda/lib/python2.7/site-packages/numpy/core/include -I/home1/busygin/cpp/fftw-3.3.4/api circular_stat.cpp circular_stat_wrap.cxx
-g++ -shared *.o -lfftw3 -o _circular_stat.so
+g++ -fpic -std=c++11 -pthread -O4 -c -Wall -I/usr/global/anaconda/include/python2.7 -I/usr/global/anaconda/lib/python2.7/site-packages/numpy/core/include -I/home1/busygin/cpp/fftw-3.3.4/api circular_stat.cpp circular_stat_wrap.cxx
+g++ -pthread -shared *.o -o _circular_stat.so

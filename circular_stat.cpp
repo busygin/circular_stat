@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstring>
+#include <thread>
 #include "circular_stat.h"
 
 
@@ -151,7 +152,7 @@ void single_trial_ppc_with_classes(
         double* ppcs_i = ppcs + (i*t_size);
         for (size_t j=0; j<i; ++j) {
             bool recall_j = recalls[j];
-            if (recall_i != recall_j) {
+            if (recall_i == recall_j) {
                 std::complex<double> *phase_diff_j = phase_diff + (j * t_size);
                 double *ppcs_j = ppcs + (j * t_size);
                 circ_diff(phase_diff_i, t_size, phase_diff_j, t_size, phase_diff_diff, t_size);
@@ -164,11 +165,32 @@ void single_trial_ppc_with_classes(
         }
     }
     size_t n_non_recalls = n_events - n_recalls;
-    for (size_t i=0; i<n_phases1; ++i) {
-        ppcs[i] /= (recalls[i] ? n_non_recalls : n_recalls);
+    for (size_t i=0; i<n_events; ++i) {
+        bool recall = recalls[i];
+        double* ppc_i = ppcs + (i*t_size);
+        for (size_t t=0; t<t_size; ++t) {
+            ppc_i[t] /= (recall ? n_recalls-1 : n_non_recalls-1);
+        }
     }
     delete[] phase_diff_diff;
     delete[] phase_diff;
+}
+
+void compute_feature(bool* recalls, size_t n_events, size_t t_size,
+                     std::complex<double>* wavelets_bp1, std::complex<double>* wavelets_bp2,
+                     double* ppcs, double* ppc_output, size_t feature_idx, size_t thread_idx) {
+    size_t m_size{n_events*t_size};
+    ppcs += thread_idx*m_size;
+    single_trial_ppc_with_classes(recalls, n_events, wavelets_bp1, m_size, wavelets_bp2, m_size, ppcs, m_size);
+    double* ppc_output_f_bp1_bp2 = ppc_output + (feature_idx*n_events);
+    for (size_t e=0; e<n_events; ++e) {
+        double s{0.0};
+        double* ppcs_e = ppcs + (e*t_size);
+        for (size_t t=0; t<t_size; ++t) {
+            s += ppcs_e[t];
+        }
+        ppc_output_f_bp1_bp2[e] = s / t_size;
+    }
 }
 
 // wavelets: n_freqs X n_bps X n_events X t_size array (flattened)
@@ -177,11 +199,14 @@ void single_trial_ppc_all_features(
         bool* recalls, size_t n_events,
         std::complex<double>* wavelets, size_t n_wavelets,
         double* ppc_output, size_t n_ppc_output,
-        size_t n_freqs, size_t n_bps)
+        size_t n_freqs, size_t n_bps, size_t n_threads)
 {
+    std::thread threads[n_threads];
+
     size_t t_size = n_wavelets / (n_freqs*n_bps*n_events);
-    double* ppcs = new double[n_events*t_size];
+    double* ppcs = new double[n_threads*n_events*t_size];
     size_t feature_idx{0};
+    size_t thread_idx{0};
     for (size_t f=0; f<n_freqs; ++f) {
         printf("Frequency %ld\n", f);
         std::complex<double>* wavelets_f = wavelets + (f*n_bps*n_events*t_size);
@@ -190,19 +215,29 @@ void single_trial_ppc_all_features(
             std::complex<double>* wavelets_bp1 = wavelets_f + (bp1*n_events*t_size);
             for (size_t bp2=0; bp2<bp1; ++bp2) {
                 std::complex<double>* wavelets_bp2 = wavelets_f + (bp2*n_events*t_size);
-                single_trial_ppc_with_classes(recalls, n_events, wavelets_bp1, n_events*t_size, wavelets_bp2, n_events*t_size, ppcs, n_events*t_size);
-                double* ppc_output_f_bp1_bp2 = ppc_output + (feature_idx*n_events);
-                for (size_t e=0; e<n_events; ++e) {
-                    double s{0.0};
-                    double* ppcs_e = ppcs + (e*t_size);
-                    for (size_t t=0; t<t_size; ++t) {
-                        s += ppcs_e[t];
-                    }
-                    ppc_output_f_bp1_bp2[e] = s;
-                }
+                threads[thread_idx] = std::thread(compute_feature, recalls, n_events, t_size, wavelets_bp1, wavelets_bp2, ppcs, ppc_output, feature_idx, thread_idx);
+                ++thread_idx;
                 ++feature_idx;
+                if (thread_idx == n_threads) {
+                    for (auto& tr : threads) tr.join();
+                    thread_idx = 0;
+                }
+
+//                single_trial_ppc_with_classes(recalls, n_events, wavelets_bp1, n_events*t_size, wavelets_bp2, n_events*t_size, ppcs, n_events*t_size);
+//                double* ppc_output_f_bp1_bp2 = ppc_output + (feature_idx*n_events);
+//                for (size_t e=0; e<n_events; ++e) {
+//                    double s{0.0};
+//                    double* ppcs_e = ppcs + (e*t_size);
+//                    for (size_t t=0; t<t_size; ++t) {
+//                        s += ppcs_e[t];
+//                    }
+//                    ppc_output_f_bp1_bp2[e] = s / t_size;
+//                }
             }
         }
     }
+
+    for (size_t i=0; i<thread_idx; ++i) threads[i].join();
+
     delete[] ppcs;
 }

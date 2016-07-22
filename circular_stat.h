@@ -39,6 +39,6 @@ void single_trial_ppc_all_features(
         bool* recalls, size_t n_events,
         std::complex<double>* wavelets, size_t n_wavelets,
         double* ppc_output, size_t n_ppc_output,
-        size_t n_freqs, size_t n_bps);
+        size_t n_freqs, size_t n_bps, size_t n_threads);
 
 #endif  // CIRCULAR_STAT_CIRCULAR_STAT_H
