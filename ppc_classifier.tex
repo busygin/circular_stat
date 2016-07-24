@@ -39,14 +39,27 @@ $\theta \to \cos\theta + i \sin\theta$.
 We will denote the computed phase differences by $\theta_{frt}^{(p_1,p_2)}$. Next, for every
 trial the average {\em phase consistency\/} is computed against every other trial from
 {\em the same session and the same class\/}. The phase consistency is defined as
-{\em cosine of the angle between phase differences\/}. This is equivalent to applying
+{\em cosine of the angle between phase differences\/}. This can be computed as
+\[ \cos(\theta_1-\theta_2) = \cos\theta_1 \cos\theta_2 + \sin\theta_1 \sin\theta_2. \]
+Notice that since cosine is an even function, the result doesn't depend on the order of
+$\theta_1$ and $\theta_2$, and cosines and sines of phase differences are their real and
+imaginary parts in algebraic representation.
 
+The phase consistency is averaged over the time window, so we obtain an array
+\[c_{fr}^{(p_1,p_2)} = \frac{1}{n_{\rho} n_t} \sum_{\rho \in {\cal C}_r} \sum_{t=1}^{n_t} \cos(\theta_{frt}^{(p_1,p_2)} - \theta_{f \rho t}^{(p_1,p_2)}), \]
+where ${\cal C}_r$ is the set of trials from the same session and the same class as $r$ and
+$n_{\rho}$ is the number of trials in ${\cal C}_r$. We can reshape this array into a 2d
+matrix of trial features $\{PPC_{rj}\}$, $j=1 \ldots n_f \cdot n_p \cdot (n_p-1) / 2$,
+where each feature will correspond to a specific frequency and a pair of bipolar pairs.
 
-(\ref{eq:phase_diff}) to phase differences and 
-
-
-The phase consistency is averaged over
-the time window, so we obtain an array
-\[a_{fr}^{(p_1,p_2)} = \frac{1}{n_{\rho} n_t} \sum{t=1}^{n_t}  \]
+We can join PPC features with spectral power features to form a single matrix. If
+$\{Pow_{rj}\}$, $j=1 \ldots n_f \cdot n_p$ is the matrix of power features, the
+joint matrix of features will be
+\begin{equation}
+\label{eq:features_matrix}
+X = \left(a \cdot PPC \ | \ Pow\right),
+\end{equation}
+where $a$ is an {\em amplifier\/} that we will optimize through a leave-one-session-out
+procedure.
 
 \end{document}
