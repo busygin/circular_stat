@@ -1,0 +1,43 @@
+\documentclass[a4paper]{article}
+
+\usepackage{amsmath}
+
+\addtolength{\oddsidemargin}{-0.7in}
+\addtolength{\evensidemargin}{-0.7in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\topmargin}{0in}
+\addtolength{\textheight}{1.75in}
+
+\DeclareMathOperator{\atan}{atan}
+
+\begin{document}
+
+\section*{Computing PPC features}
+
+First, we compute wavelet transform of bipolar EEG. As the result of it, we have a $4$-dim
+array of complex numbers $w_{fprt}$, $f = 1 \ldots n_f$, $p = 1 \ldots n_p$, $r = 1 \ldots n_r$,
+$t = 1 \ldots n_t$, (frequencies $\times$ bipolar pairs $\times$ trials $\times$ time points).
+Trials are divided into successful (recalls) and unsuccessful classes (non-recalls).
+
+For each $f$, $r$, $t$ and pair $(p_1,p_2)$, we compute the phase difference. The phase
+difference between two complex numbers $z_1$ and $z_2$ can be defined as their ratio normalized
+to the unit circle, i.e.,
+\[ \theta(z_1,z_2) \to \frac{z_1/z_2}{|z_1/z_2|} = \frac{\left(\Re(z_1) \Re(z_2) + \Im(z_1) \Im(z_2)\right) + i \left(\Im(z_1) \Re(z_2) - \Re(z_1) \Im(z_2)\right)}{\sqrt{\left(\Re(z_1) \Re(z_2) + \Im(z_1) \Im(z_2)\right)^2 + \left(\Im(z_1) \Re(z_2) - \Re(z_1) \Im(z_2)\right)^2}}. \]
+
+{\em Remark:} though this formula looks more complicated than subtracting to angles when
+complex numbers are represented in polar coordinate form (powers and phases), computing
+the phases as angles themselves and then operating with them further requires computing
+trigonometric ($\cos$, $\sin$) and inverse trigonometric ($\atan$) functions, which are
+transcendental functions that are much more expensive to compute than algebraic expressions.
+So, we will always assume that complex numbers, as well as their phase differences are
+represented in the algebraic form, i.e., $z \to \Re(z) + i \Im(z)$ and
+$\theta \to \cos\theta + i \sin\theta$.
+
+We will denote the computed phase differences by $\theta_{frt}^{(p_1,p_2)}$. Next, for every
+trial the average {\em phase consistency\/} is computed against every other trial from
+{\em the same session and the same class\/}. The phase consistency is defined as
+{\em cosine of the angle between phase differences\/}. The phase consistency is averaged over
+the time window, so we obtain an array
+\[a_{fr}^{(p_1,p_2)} = \frac{1}{n_{\rho} n_t} \sum{t=1}^{n_t}  \]
+
+\end{document}
