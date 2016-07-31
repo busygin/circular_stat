@@ -46,7 +46,7 @@ $\theta_1$ and $\theta_2$, and cosines and sines of phase differences are their 
 imaginary parts in algebraic representation.
 
 The phase consistency is averaged over the time window, so we obtain an array
-\[c_{fr}^{(p_1,p_2)} = \frac{1}{n_{\rho} n_t} \sum_{\rho \in {\cal C}_r} \sum_{t=1}^{n_t} \cos(\theta_{frt}^{(p_1,p_2)} - \theta_{f \rho t}^{(p_1,p_2)}), \]
+\[ c_{fr}^{(p_1,p_2)} = \frac{1}{(n_{\rho}-1) n_t} \sum_{\rho \in {\cal C}_r \atop \rho \neq r} \sum_{t=1}^{n_t} \cos(\theta_{frt}^{(p_1,p_2)} - \theta_{f \rho t}^{(p_1,p_2)}), \]
 where ${\cal C}_r$ is the set of trials from the same session and the same class as $r$ and
 $n_{\rho}$ is the number of trials in ${\cal C}_r$. We can reshape this array into a 2d
 matrix of trial features $\{PPC_{rj}\}$, $j=1 \ldots n_f \cdot n_p \cdot (n_p-1) / 2$,
@@ -60,6 +60,9 @@ joint matrix of features will be
 X = \left(a \cdot PPC \ | \ Pow\right),
 \end{equation}
 where $a$ is an {\em amplifier\/} that we will optimize through a leave-one-session-out
-procedure.
+procedure. The reason for having this hyperparameter is that we want to maintain a single
+regularization parameter for the classifier fit and having two groups of features of
+different nature requires scaling one of them in order to make it possible.
+
 
 \end{document}
