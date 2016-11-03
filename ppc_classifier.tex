@@ -1,0 +1,68 @@
+\documentclass[a4paper]{article}
+
+\usepackage{amsmath}
+
+\addtolength{\oddsidemargin}{-0.7in}
+\addtolength{\evensidemargin}{-0.7in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\topmargin}{0in}
+\addtolength{\textheight}{1.75in}
+
+\DeclareMathOperator{\atan}{atan}
+
+\begin{document}
+
+\section*{Computing PPC features}
+
+First, we compute wavelet transform of bipolar EEG. As the result of it, we have a $4$-dim
+array of complex numbers $w_{fprt}$, $f = 1 \ldots n_f$, $p = 1 \ldots n_p$, $r = 1 \ldots n_r$,
+$t = 1 \ldots n_t$, (frequencies $\times$ bipolar pairs $\times$ trials $\times$ time points).
+Trials are divided into successful (recalls) and unsuccessful classes (non-recalls).
+
+For each $f$, $r$, $t$ and pair $(p_1,p_2)$, we compute the phase difference. The phase
+difference between two complex numbers $z_1$ and $z_2$ can be defined as their ratio normalized
+to the unit circle, i.e.,
+\begin{equation}
+\label{eq:phase_diff}
+\theta(z_1,z_2) \to \frac{z_1/z_2}{|z_1/z_2|} = \frac{\left(\Re(z_1) \Re(z_2) + \Im(z_1) \Im(z_2)\right) + i \left(\Im(z_1) \Re(z_2) - \Re(z_1) \Im(z_2)\right)}{\sqrt{\left(\Re(z_1) \Re(z_2) + \Im(z_1) \Im(z_2)\right)^2 + \left(\Im(z_1) \Re(z_2) - \Re(z_1) \Im(z_2)\right)^2}}.
+\end{equation}
+
+{\em Remark:} though this formula looks more complicated than subtracting to angles when
+complex numbers are represented in polar coordinate form (powers and phases), computing
+the phases as angles themselves and then operating with them further requires computing
+trigonometric ($\cos$, $\sin$) and inverse trigonometric ($\atan$) functions, which are
+transcendental functions that are much more expensive to compute than algebraic expressions.
+So, we will always assume that complex numbers, as well as their phase differences are
+represented in the algebraic form, i.e., $z \to \Re(z) + i \Im(z)$ and
+$\theta \to \cos\theta + i \sin\theta$.
+
+We will denote the computed phase differences by $\theta_{frt}^{(p_1,p_2)}$. Next, for every
+trial the average {\em phase consistency\/} is computed against every other trial from
+{\em the same session and the same class\/}. The phase consistency is defined as
+{\em cosine of the angle between phase differences\/}. This can be computed as
+\[ \cos(\theta_1-\theta_2) = \cos\theta_1 \cos\theta_2 + \sin\theta_1 \sin\theta_2. \]
+Notice that since cosine is an even function, the result doesn't depend on the order of
+$\theta_1$ and $\theta_2$, and cosines and sines of phase differences are their real and
+imaginary parts in algebraic representation.
+
+The phase consistency is averaged over the time window, so we obtain an array
+\[ c_{fr}^{(p_1,p_2)} = \frac{1}{(n_{\rho}-1) n_t} \sum_{\rho \in {\cal C}_r \atop \rho \neq r} \sum_{t=1}^{n_t} \cos(\theta_{frt}^{(p_1,p_2)} - \theta_{f \rho t}^{(p_1,p_2)}), \]
+where ${\cal C}_r$ is the set of trials from the same session and the same class as $r$ and
+$n_{\rho}$ is the number of trials in ${\cal C}_r$. We can reshape this array into a 2d
+matrix of trial features $\{PPC_{rj}\}$, $j=1 \ldots n_f \cdot n_p \cdot (n_p-1) / 2$,
+where each feature will correspond to a specific frequency and a pair of bipolar pairs.
+
+We can join PPC features with spectral power features to form a single matrix. If
+$\{Pow_{rj}\}$, $j=1 \ldots n_f \cdot n_p$ is the matrix of power features, the
+joint matrix of features will be
+\begin{equation}
+\label{eq:features_matrix}
+X = \left(a \cdot PPC \ | \ Pow\right),
+\end{equation}
+where $a$ is an {\em amplifier\/} that we will optimize through a leave-one-session-out
+procedure. The reason for having this hyperparameter is that we want to maintain a single
+regularization parameter for the classifier fit and having two groups of features of
+different nature requires scaling one of them in order to make it possible.
+
+
+\end{document}
