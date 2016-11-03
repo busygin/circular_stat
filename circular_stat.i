@@ -32,5 +32,12 @@ import_array();
 %apply (std::complex<double>* IN_ARRAY1, size_t DIM1) {(std::complex<double>* wavelets, size_t n_wavelets)};
 %apply (double* INPLACE_ARRAY1, size_t DIM1) {(double* ppc_output, size_t n_ppc_output)};
 
+%apply (std::complex<double>* INPLACE_ARRAY1, size_t DIM1) {(std::complex<double>* theta_sum_recalls, size_t n_theta_sum_recalls)};
+%apply (std::complex<double>* INPLACE_ARRAY1, size_t DIM1) {(std::complex<double>* theta_sum_non_recalls, size_t n_theta_sum_non_recalls)};
+
+%apply (std::complex<double>* IN_ARRAY1, size_t DIM1) {(std::complex<double>* theta_avg_recalls, size_t n_theta_avg_recalls)};
+%apply (std::complex<double>* IN_ARRAY1, size_t DIM1) {(std::complex<double>* theta_avg_non_recalls, size_t n_theta_avg_non_recalls)};
+
+%apply (double* INPLACE_ARRAY1, size_t DIM1) {(double* outsample_ppc_features, size_t n_outsample_ppc_features)};
 
 %include "circular_stat.h"
